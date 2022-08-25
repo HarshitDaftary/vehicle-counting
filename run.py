@@ -14,7 +14,7 @@ parser.add_argument('--mapping', default=None, help='Specify a class mapping if 
 def main(args, config):
     os.environ['CUDA_VISIBLE_DEVICES'] = args.gpus
     num_gpus = len(args.gpus.split(','))
-    devices_info = get_devices_info(args.gpus)
+    devices_info = {} #get_devices_info(args.gpus)
 
     if os.path.isdir(args.input_path):
         if not os.path.exists(args.output_path):

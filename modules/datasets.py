@@ -1,3 +1,4 @@
+from configparser import Interpolation
 import os
 import cv2
 import numpy as np
@@ -8,6 +9,8 @@ from torch.utils.data import DataLoader
 import albumentations as A
 from albumentations.pytorch.transforms import ToTensorV2
 from augmentations.transforms import get_resize_augmentation, MEAN, STD
+# from albumentations.augmentations.geometric.resize import SmallestMaxSize
+
 
 from utilities.utils import write_to_video
 from utilities.counting import visualize_merged
@@ -19,6 +22,9 @@ class VideoSet:
         self.transforms = A.Compose([
             get_resize_augmentation(config.image_size, keep_ratio=config.keep_ratio),
             A.Normalize(mean=MEAN, std=STD, max_pixel_value=1.0, p=1.0),
+        ])
+        self.resize_transform = A.Compose([
+            A.augmentations.geometric.resize.SmallestMaxSize(max_size=config.image_size[0], interpolation=1, always_apply=True, p=1)
         ])
 
         self.initialize_stream()
@@ -53,7 +59,7 @@ class VideoSet:
         
         self.current_frame_id = idx+1
         frame = cv2.cvtColor(ori_frame, cv2.COLOR_BGR2RGB) 
-
+        
         return {
             'img': frame,
             'frame': self.current_frame_id,
@@ -87,7 +93,7 @@ class VideoLoader(DataLoader):
         self.video_path = video_path
         dataset = VideoSet(config, video_path)
         self.video_info = dataset.video_info
-       
+    
         super(VideoLoader, self).__init__(
             dataset,
             batch_size= 1,
